@@ -1,0 +1,65 @@
+-----------templates/index.html------------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combo Box Example</title>
+</head>
+<body>
+    <h1>Select an Option:</h1>
+    <label for="myComboBox">Choose an option:</label>
+    <select id="myComboBox">
+        <option value="option1">Option 1</option>
+        <option value="option2">Option 2</option>
+        <option value="option3">Option 3</option>
+    </select>
+    <p>Selected option: <span id="selectedOption"></span></p>
+
+    <script>
+        // JavaScript code to capture the selected option
+        const comboBox = document.getElementById("myComboBox");
+        const selectedOption = document.getElementById("selectedOption");
+
+        comboBox.addEventListener("change", function() {
+            selectedOption.textContent = comboBox.value;
+        });
+    </script>
+</body>
+</html>
+
+
+
+-----------------app.py-----------------
+from flask import Flask,render_template
+app= Flask(__name__)
+@app.get('/')
+def get_home():
+    return render_template('index.html')
+app.run()
+
+
+
+--------------test.oy---------------
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+driver=webdriver.Edge()
+driver.get("http://127.0.0.1:5000/")
+
+select = driver.find_element(By.ID,'myComboBox')
+options = select.find_elements(By.TAG_NAME,'option')
+count=0
+for option in options:
+    print(option.text+" "+option.get_attribute('value'))
+    count +=1 
+print("Count:",count)
+driver.quit()
+
+
+"""OUTPUT:-
+    Option 1-1
+    Option 2-2
+    Option 3-3
+    Count: 3
+"""

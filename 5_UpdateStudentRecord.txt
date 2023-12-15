@@ -1,0 +1,243 @@
+-----------------templates/index.html------------------------------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Records</title>
+    <style>
+      body {
+         font-family: Arial, sans-serif;
+         margin: 10px;
+         padding: 10px;
+         background-color: #f0f0f0;
+      }
+      h1 {
+         text-align: center;
+         background-color: #007bff;
+         color: #fff;
+         padding: 10px;
+      }
+      form {
+         text-align: center;
+         margin: 20px 0 -10px 0;
+      }
+      label {
+         display: inline-block;
+         margin-bottom: 5px;
+         font-weight: bold;
+         padding-bottom: 3px;
+         text-align: center;
+      }
+      input[type="text"] {
+         width: 30%;
+         padding: 10px 0 10px 20px;
+         border: 1px solid #ccc;
+         border-radius: 5px;
+         margin-top: 5px;
+      }
+      input[type="submit"] {
+         background-color: #007bff;
+         color: #fff;
+         padding: 10px 20px;
+         border: none;
+         border-radius: 5px;
+         cursor: pointer;
+         margin-top: 10px;
+         width: 200px;
+         height: 50px;
+      }
+      #msg {
+         text-align: center;
+         color: red;
+         font-weight: bold;
+         margin-top: 10px;
+      }
+      table {
+         width: 80%;
+         margin: 0 auto;
+         border-collapse: collapse;
+         margin-top: 20px;
+      }
+      th, td {
+         border: 1px solid #ccc;
+         padding: 10px;
+         text-align: center;
+      }
+      th {
+         background-color: #007bff;
+         color: #fff;
+      }
+      tr:nth-child(even) {
+         background-color: #f2f2f2;
+      }
+      tr:hover {
+         background-color: #ddd;
+      }
+  </style>
+</head>
+<body>
+   <h1>Update Student Records</h1>
+   <form id="updateForm">
+      <label for="name">name:</label> 
+      <input type="text" name="name" id='name'> <br>
+
+      <label for="age">age:</label> 
+      <input type="text" name="age" id="age"> <br>
+
+      <label for="gender">gender:</label>
+      <input type="text" name="gender" id="gender"> <br>
+
+      <label for="grade">grade:</label>
+      <input type="text" name="grade" id="grade"><br>
+
+      <br> <input type="submit" value="Update this record"> <br>
+   </form>
+
+   <p id="msg"></p> <br><br>
+   <div>
+      <table id="myTable">
+         <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Gender</th>
+            <th>Grade</th>
+         </tr>
+         <tbody>
+            {% for row in data %}
+            <tr>
+               <td>{{ row['Name'] }}</td>
+               <td>{{ row['Age'] }}</td>
+               <td>{{ row['Gender'] }}</td>
+               <td>{{ row['Grade'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+      </table>
+   </div>
+   <script>
+      document.getElementById("updateForm").addEventListener("submit",
+      function (event){
+         event.preventDefault()
+         var name = document.getElementById("name").value;
+         var age = document.getElementById("age").value;
+         var gender = document.getElementById("gender").value;
+         var grade = document.getElementById("grade").value;
+
+         if( name ==="" || (age ==="" && grade ==="") || gender ===""){
+            document.getElementById("msg").innerHTML = "Please fill the form properly with all the values";
+            return;
+         }
+         var table = document.getElementById("myTable");
+         var rows = table.rows;
+         var rowIndex = -1;
+         for(var i=0; i<rows.length; i++){
+            if(rows[i].cells[0].innerHTML === name){
+               document.getElementById("msg").innerHTML = "name: "+name;
+               rowIndex = i;
+               break;
+            }
+         }
+         if(rowIndex === -1){
+            document.getElementById("msg").innerHTML = "No students record found with name: "+ name;
+            return;
+         }
+         if( age !==""){
+            var oldAge = parseFloat(rows[rowIndex].cells[1].innerHTML);
+            if(oldAge === age){
+               document.getElementById("msg").innerHTML = "The updated age is same as the old age";
+            }else{
+               rows[rowIndex].cells[1].innerHTML = age;
+            }
+         }
+         document.getElementById("msg").innerHTML = "student record updated successfully!";
+         document.getElementById("updateForm").reset();
+      });
+   </script>
+</body>
+</html>
+
+
+
+
+
+
+------------------app.py----------------------------
+from flask import Flask,render_template
+import pandas as pd
+app = Flask(__name__)
+@app.route('/')
+def index():
+   df = pd.read_excel("students.xlsx")
+   data = df.to_dict('records')
+   return render_template('index.html',data=data)
+if __name__ == "__main__":
+   app.run(debug=True, port=5500)
+
+
+-----------------enhance.py----------------------------
+import openpyxl
+from time import sleep
+from selenium import webdriver
+# from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+
+def test():
+   try:
+      driver=webdriver.Edge()
+      driver.get("http://127.0.0.1:5500/templates/")
+      students = [["amy","20","F","A+"]]
+      student_data = []
+      for student in students:
+         name_input = driver.find_element(By.ID, "name")
+         name_input.send_keys(student[0])
+
+         age_input = driver.find_element(By.ID, "age")
+         age_input.send_keys(student[1])
+
+         gen_input = driver.find_element(By.ID, "gender")
+         gen_input.send_keys(student[2])
+
+         grade_input = driver.find_element(By.ID, "grade")
+         grade_input.send_keys(student[3])
+         sleep(3)
+         update_btn = driver.find_element(By.XPATH, '//*[@id="updateForm"]/input[5]')
+         update_btn.click()
+
+         msg = driver.find_element(By.ID, "msg").text
+         print(f"msg={msg} type={type(msg)}")
+         if msg == "student record updated successfully!":
+            print(f"student:{student[0]} updated")
+         else:
+            print("A wrong input was given aborting updates")
+            return
+         student_data.append(student)
+      # table = driver.find_element(By.ID, "myTable")
+      # rows = table.find_elements(By.TAG_NAME, "tr")
+      # for row in rows:
+      #    cells = row.find_elements(By.TAG_NAME, "td")
+      #    name = cells[0].text
+      #    age = cells[1].text
+      #    gen = cells[2].text
+      #    grade = cells[3].text
+      #    student_data.append([name], [age], [gen], [grade])
+      driver.quit()
+
+      print("Updating...")
+      wb = openpyxl.Workbook()
+      ws =wb.active
+      ws.cell(row=1, column=1).value = "name:"
+      ws.cell(row=1, column=2).value = "age:"
+      ws.cell(row=1, column=3).value = "gender"
+      ws.cell(row=1, column=4).value = "grade"
+
+      for i, data in enumerate(student_data):
+         ws.cell(row=i+2, column=1).value = data[0]
+         ws.cell(row=i+2, column=2).value = data[1]
+         ws.cell(row=i+2, column=3).value = data[2]
+         ws.cell(row=i+2, column=4).value = data[3]
+      wb.save("output_pr5_students.xlsx")
+      print("successfully added to sheet")
+   except Exception as e:
+      print("Error...",e)
+test()

@@ -1,0 +1,94 @@
+----------------------templates/index.html------------------
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Document</title>
+   <style>
+      table, tr, td{
+         border: 1px solid burlywood;
+         border-collapse: collapse;
+      }
+   </style>
+</head>
+<body>
+   <h1>STUDENT TABLE</h1>
+   <table>
+      <thead>
+         <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Subj1</th>
+            <th>Subj2</th>
+            <th>Subj3</th>
+         </tr>
+      </thead>
+      {% for row in data %}
+      <tbody>
+         <td>{{row['id']}}</td>
+         <td>{{row['name']}}</td>
+         <td>{{row['gender']}}</td>
+         <td>{{row['subj1']}}</td>
+         <td>{{row['subj2']}}</td>
+         <td>{{row['subj3']}}</td>
+      </tbody>
+      {% endfor %}
+   </table>
+</body>
+</html>
+
+
+
+
+
+-------------app.py------------------------------
+from flask import Flask, render_template
+import pandas as pd
+app = Flask(__name__)
+@app.route('/')
+def main():
+   df = pd.read_excel('students.xlsx')
+   data = df.to_dict('records')
+   return render_template('index.html', data=data)
+if __name__=="__main__":
+   app.run(debug=True, port=8008)
+
+
+------------check.py-------------
+from time import sleep
+from selenium import webdriver 
+from selenium.webdriver.common.by import By
+
+def test():
+   driver = webdriver.Edge()
+   driver.get('http://127.0.0.1:8008/')
+   s1H_marks = {'student':'', 'marks':0}
+   s2H_marks = {'student':'', 'marks':0}
+   s3H_marks = {'student':'', 'marks':0}
+
+   table = driver.find_element(By.TAG_NAME, 'table')
+   rows = driver.find_elements(By.TAG_NAME, 'tr')
+   sleep(5)
+   student_marks60 = []
+   for row in rows[1:]:
+      cell = row.find_elements(By.TAG_NAME, 'td')
+      if int(cell[3].text) >= 60 or int(cell[4].text) >= 60 or int(cell[5].text) >= 60:
+         student_marks60.append([int(cell[0].text),cell[1].text, cell[2].text, int(cell[3].text), int(cell[4].text), int(cell[5].text)])
+         for student in student_marks60:
+            if student[3] > s1H_marks['marks']:
+               s1H_marks = {'student':student[1], 'marks':student[3]}
+
+            if student[4] > s2H_marks['marks']:
+               s2H_marks = {'student':student[1], 'marks':student[4]}
+
+            if student[5] > s3H_marks['marks']:
+               s3H_marks = {'student':student[1], 'marks':student[5]}
+         print(f"Student: {student}")
+   print("\n\nHighest marks mode than 60 of each subject.")
+   print(f"subj1: {s1H_marks} \nsubj2: {s2H_marks} \nsubj3: {s3H_marks}")
+   driver.quit()
+
+if __name__ =="__main__":
+   test()

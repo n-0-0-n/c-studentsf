@@ -1,0 +1,103 @@
+-----------------facebook_login.py--------------------
+
+import time
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+def main():
+   options =Options()
+   options.add_experimental_option("excludeSwitches" , ["enable-automation"])
+   service = Service(r"C:\selenium\chromedriver-win64\chromedriver.exe")
+   driver = webdriver.Chrome(options=options ,service=service)
+   url = 'https://www.facebook.com/'
+   driver.get(url)
+   time.sleep(1)
+   email = driver.find_element(By.ID, 'email')
+   email.send_keys("youremail@gmail.com")
+   time.sleep(1)
+   password =driver.find_element(By.ID, "pass")
+   password.send_keys("yourpassword")
+   time.sleep(1)
+   btn =driver.find_element(By.XPATH , '/html/body/div[1]/div[1]/div[1]/div/div/div/div[2]/div/div[1]/form/div[2]/button')
+   btn.click()
+   time.sleep(4)
+main()
+
+
+
+---------------------myLoginPage.html--------------------------------------
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Login Page</title>
+</head>
+<body>
+   <div class="container">
+      <h2>Login Page</h2>
+      <div class="form-group">
+         <label for="username">Username:</label>
+         <input type="text" id="username" placeholder="Enter your username">
+      </div>
+      <div class="form-group">
+         <label for="password">Password:</label>
+         <input type="password" id="password" placeholder="Enter your password">
+      </div>
+      <button class="btn" onclick="login()">Login</button>
+      <div class="success-message" id="successMessage" style="display: none">
+         Login Successful! Welcome!
+      </div>
+   </div>
+
+   <script>
+      function login() {
+         const username = document.getElementById('username').value;
+         const password = document.getElementById('password').value;
+         const successMessage = document.getElementById('successMessage');
+         // Simulate a successful login by checking if username and password are not empty
+         if (username && password) {
+            const message = `Username: ${username}\nPassword: ${password}`;
+            var yes=window.confirm(message,"Do you want to proceed?");
+            if (yes){
+               successMessage.style.display = 'block';
+            }
+         }
+      }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+-------------------testing_mycode.py--------------------------------
+
+import time
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+def main():
+   options =Options()
+   options.add_experimental_option("excludeSwitches" , ["enable-automation"])
+   service = Service(r"C:\selenium\chromedriver-win64\chromedriver.exe")
+   driver = webdriver.Chrome(options=options ,service=service)
+   url = 'http://127.0.0.1:5500/myLoginPage.html'
+   driver.get(url)
+   time.sleep(1)
+   email = driver.find_element(By.ID, 'username')
+   email.send_keys("youremail@gmail.com")
+   time.sleep(1)
+   password =driver.find_element(By.ID, "password")
+   password.send_keys("yourpassword")
+   time.sleep(1)
+   btn =driver.find_element(By.XPATH , '/html/body/div/button')
+   btn.click()
+   time.sleep(40)
+main()
